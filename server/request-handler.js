@@ -41,26 +41,30 @@ var requestHandler = function(request, response) {
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
   headers['Content-Type'] = 'application/json';
-  if(request.method === 'GET'){
-     statusCode = 200;
-    response.writeHead(statusCode, headers);
-    //response.end(JSON.stringify(obj))
+  if(request.url.match(/classes/)){
+    if(request.method === 'GET' || request.method === 'OPTIONS'){
+       statusCode = 200;
+      //response.end(JSON.stringify(obj))
+    }
+    if(request.method === 'POST'){
+      statusCode = 201;
+      var jsonString = '';
+      request.on('data', function(data){
+        jsonString += data;
+      })
+      request.on('end', function(){
+        result.push(JSON.parse(jsonString))
+      })
+    }
   }
-  if(request.method === 'POST'){
-    statusCode = 201;
-    response.writeHead(statusCode, headers);
-    var jsonString = '';
-    request.on('data', function(data){
-      jsonString += data;
-    })
-    request.on('end', function(){
-      result.push(JSON.parse(jsonString))
-    })
-  }
+
+  // if(request.url !== '/classes/room1' && request.url !== '/classes/messages'){
+  //   statusCode = 404;
+  // }
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
 
-  // response.writeHead(statusCode, headers);
+   response.writeHead(statusCode, headers);
 
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
@@ -86,7 +90,7 @@ var defaultCorsHeaders = {
   "access-control-allow-origin": "*",
   "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
   "access-control-allow-headers": "content-type, accept",
-  "access-control-max-age": 10 // Seconds.
+  "access-control-max-age": 6 // Seconds.
 };
 
 exports.requestHandler = requestHandler;
